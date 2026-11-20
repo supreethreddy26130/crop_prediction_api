@@ -56,18 +56,15 @@ def predict(request: PredictionRequest):
     input_data = pd.DataFrame([row], columns=feature_names)
 
     prediction = model.predict(input_data)[0]
-    result = {"prediction": prediction.item() if hasattr(prediction, "item") else prediction}
+    probabilities = model.predict_proba(input_data)[0]
 
-    if hasattr(model, "predict_proba"):
-        probabilities = model.predict_proba(input_data)[0]
-        result["probabilities"] = [
-            float(value) for value in probabilities
-        ]
-
-        if hasattr(model, "classes_"):
-            result["classes"] = [
-                value.item() if hasattr(value, "item") else value
-                for value in model.classes_
-            ]
-
-    return result
+    return {
+        "predicted_crop": str(prediction),
+        "probabilities": [
+            {
+                "class": str(crop),
+                "probability": round(float(probability), 4),
+            }
+            for crop, probability in zip(model.classes_, probabilities)
+        ],
+    }
