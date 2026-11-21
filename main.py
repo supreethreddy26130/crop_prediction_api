@@ -13,14 +13,12 @@ BASE_DIR = Path(__file__).resolve().parent
 MODEL_PATH = BASE_DIR / "random_forest_model.pkl"
 FEATURES_PATH = BASE_DIR / "feature_names.pkl"
 
-# Only load pickle files from a trusted source.
 with MODEL_PATH.open("rb") as f:
     model = joblib.load(f)
 
 with FEATURES_PATH.open("rb") as f:
     feature_names = joblib.load(f)
 
-# Handle feature names stored as a list, tuple, or NumPy array.
 feature_names = list(feature_names)
 
 app = FastAPI(title="Crop Recommendation API")
@@ -77,7 +75,6 @@ def predict(request: PredictionRequest):
             detail={"missing_features": missing, "unexpected_features": extra},
         )
 
-    # Explicitly order inputs to match the model's training feature order.
     row = {name: supplied[name] for name in feature_names}
     input_data = pd.DataFrame([row], columns=feature_names)
 
