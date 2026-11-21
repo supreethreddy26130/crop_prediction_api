@@ -25,8 +25,34 @@ feature_names = list(feature_names)
 
 app = FastAPI(title="Crop Recommendation API")
 
+class CropFeatures(BaseModel):
+    N: float
+    P: float
+    K: float
+    temperature: float
+    humidity: float
+    ph: float
+    rainfall: float
+
+
 class PredictionRequest(BaseModel):
-    features: dict[str, float]
+    features: CropFeatures
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "features": {
+                    "N": 90,
+                    "P": 42,
+                    "K": 43,
+                    "temperature": 20.9,
+                    "humidity": 82.0,
+                    "ph": 6.5,
+                    "rainfall": 202.9,
+                }
+            }
+        }
+    }
 
 
 @app.get("/")
@@ -41,7 +67,7 @@ def get_features():
 
 @app.post("/predict")
 def predict(request: PredictionRequest):
-    supplied = request.features
+    supplied = request.features.model_dump()
     missing = [name for name in feature_names if name not in supplied]
     extra = [name for name in supplied if name not in feature_names]
 
